@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Política de cookies · Halloween en Puente Tablas</title>
+<style>
+:root { --noche: #0d0a0c; --tinta: #efe6da; --tenue: #b8a999; --farol: #e0872f; --sangre: #d4202a; color-scheme: dark; }
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; background: var(--noche); color: var(--tinta); font-family: Georgia, "Times New Roman", serif; font-size: 18px; line-height: 1.5; }
+main { max-width: 720px; margin-inline: auto; padding-block: 40px 56px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+h1 { color: var(--sangre); font-size: 2rem; margin: 0 0 20px; }
+h2 { color: var(--farol); font-size: 1.25rem; margin: 28px 0 8px; font-weight: 400; letter-spacing: .03em; }
+p, li { color: var(--tinta); }
+a { color: var(--farol); }
+table { width: 100%; border-collapse: collapse; font-size: 1rem; }
+th, td { text-align: left; padding: 8px; border-bottom: 1px solid rgba(224, 135, 47, .4); vertical-align: top; }
+.tabla { overflow-x: auto; }
+button { font: inherit; border-radius: 999px; padding: 10px 20px; cursor: pointer; border: 1px solid var(--farol); background: transparent; color: var(--tinta); }
+.nota { color: var(--tenue); font-size: .95rem; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Política de cookies</h1>
+  <p>Esta web del evento de Halloween en Puente Tablas la gestiona la <strong>Asociación de Vecinos Puente Ibérico</strong>. Puedes escribirnos a <a href="mailto:avpuenteiberico@gmail.com">avpuenteiberico@gmail.com</a>.</p>
+
+  <h2>¿Qué son las cookies?</h2>
+  <p>Son pequeños archivos que una web guarda en tu navegador para recordar información sobre tu visita.</p>
+
+  <h2>¿Qué cookies usamos?</h2>
+  <p>Solo usamos cookies de <strong>Google Analytics</strong>, y únicamente si las aceptas. Nos sirven para saber cuántas personas visitan la web, qué secciones miran y cuántas juegan al minijuego. No las usamos para publicidad ni para identificarte.</p>
+  <div class="tabla">
+    <table>
+      <thead><tr><th>Cookie</th><th>Proveedor</th><th>Para qué sirve</th><th>Duración</th></tr></thead>
+      <tbody>
+        <tr><td>_ga</td><td>Google</td><td>Distinguir visitantes de forma anónima</td><td>2 años</td></tr>
+        <tr><td>_ga_*</td><td>Google</td><td>Mantener el estado de la visita</td><td>2 años</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>Además, la web guarda en tu navegador si has aceptado o rechazado las cookies, y si has quitado el sonido del juego. Esa información no sale de tu dispositivo.</p>
+
+  <h2>Cómo cambiar tu elección</h2>
+  <p>Puedes cambiar de opinión cuando quieras. Pulsa el botón y la próxima vez que entres en la web te volveremos a preguntar.</p>
+  <p><button id="reiniciar" type="button">Cambiar mi elección de cookies</button></p>
+  <p id="hecho" class="nota" hidden>Listo. Al volver a la web te preguntaremos de nuevo.</p>
+  <p>También puedes borrar las cookies desde la configuración de tu navegador.</p>
+
+  <h2>Más información</h2>
+  <p>Google trata estos datos según su <a href="https://policies.google.com/privacy?hl=es" target="_blank" rel="noopener">política de privacidad</a>.</p>
+
+  <p><a href="index.html">← Volver a la web del evento</a></p>
+</main>
+<script>
+document.getElementById("reiniciar").addEventListener("click", function () {
+  try { localStorage.removeItem("h1880-cookies"); } catch (e) {}
+  document.getElementById("hecho").hidden = false;
+});
+</script>
+</body>
+</html>

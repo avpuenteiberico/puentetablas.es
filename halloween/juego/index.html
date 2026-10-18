@@ -1,0 +1,704 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Minijuego de Halloween en Puente Tablas: encuentra los objetos y escapa del Hospital 1880.">
+<meta property="og:title" content="Escapa del Hospital 1880">
+<meta property="og:description" content="Minijuego de Halloween en Puente Tablas: encuentra los objetos y escapa del Hospital 1880.">
+<meta property="og:image" content="https://puentetablas.es/halloween/img/compartir.jpg">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<title>Escapa del Hospital 1880</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Creepster&family=Cormorant+Garamond:ital,wght@0,500;0,700;1,500&family=IM+Fell+English+SC&display=swap">
+<style>
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0}
+img{max-width:100%}
+[hidden]{display:none!important}
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+/* Una sola pantalla: sala de espera a oscuras; la linterna del jugador es lo único que ilumina. Estética única (noche), a juego con el cartel. */
+:root {
+  --noche: #0d0a0c;
+  --noche-2: #1a1215;
+  --tinta: #efe6da;
+  --tenue: #b5a698;
+  --sangre: #d4202a;
+  --farol: #e0872f;
+  --papel: #eadcc0;
+  --papel-tinta: #3a2a1e;
+  --raya: rgba(224, 135, 47, .45);
+  --f-display: "Creepster", Impact, "Arial Black", fantasy;
+  --f-texto: "Cormorant Garamond", Georgia, "Times New Roman", serif;
+  --f-rotulo: "IM Fell English SC", Georgia, serif;
+  color-scheme: dark;
+}
+@property --x { syntax: "<length>"; inherits: true; initial-value: 0px; }
+@property --y { syntax: "<length>"; inherits: true; initial-value: 0px; }
+html, body { height: 100%; }
+body { background: var(--noche); color: var(--tinta); font-family: var(--f-texto); font-size: 18px; overflow: hidden; }
+#app { height: 100%; display: flex; flex-direction: column; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 8px; box-sizing: border-box; }
+.pantalla { flex: 1; min-height: 0; }
+button, .boton { font: inherit; cursor: pointer; }
+:focus-visible { outline: 3px solid var(--farol); outline-offset: 3px; }
+
+/* ---------- Inicio y final ---------- */
+#inicio, #fin { overflow-y: auto; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 18px; padding-block: 24px; }
+.antetitulo { font-family: var(--f-rotulo); color: var(--farol); letter-spacing: .08em; font-size: 1.05rem; margin: 0; }
+.titulo { font-family: var(--f-display); color: var(--sangre); font-weight: 400; font-size: clamp(3.2rem, 16vw, 5.5rem); line-height: .9; margin: 0; text-shadow: 0 0 24px rgba(212, 32, 42, .35); text-wrap: balance; }
+.entrada { max-width: 32ch; margin: 0; font-size: 1.2rem; line-height: 1.4; }
+.lista-objetos { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; padding: 0; margin: 0; list-style: none; }
+.lista-objetos li { width: 52px; height: 52px; border: 1px solid var(--raya); border-radius: 50%; display: grid; place-items: center; background: var(--noche-2); }
+.lista-objetos svg { width: 36px; height: 36px; filter: brightness(0) invert(.35); }
+.boton-principal { text-decoration: none; display: inline-block; background: var(--sangre); color: var(--tinta); border: 0; border-radius: 999px; padding: 14px 30px; font-family: var(--f-rotulo); font-size: 1.3rem; letter-spacing: .05em; box-shadow: 0 0 0 3px var(--noche), 0 0 0 4px var(--raya); }
+.boton-principal:hover { filter: brightness(1.12); }
+.boton-secundario { background: transparent; color: var(--tinta); border: 1px solid var(--raya); border-radius: 999px; padding: 11px 22px; font-family: var(--f-rotulo); font-size: 1.05rem; text-decoration: none; display: inline-block; }
+.pie { color: var(--tenue); font-size: 1rem; margin: 0; max-width: 34ch; }
+.pie strong { color: var(--farol); font-weight: 700; }
+
+/* ---------- Juego ---------- */
+#juego { display: grid; grid-template-rows: auto minmax(0, 1fr) auto; gap: 8px; }
+.barra { display: flex; align-items: center; gap: 8px; }
+.barra .marca { font-family: var(--f-display); color: var(--sangre); font-size: 1.35rem; margin-right: auto; white-space: nowrap; }
+.barra .dato { font-family: var(--f-rotulo); color: var(--tenue); font-variant-numeric: tabular-nums; }
+.barra button { background: var(--noche-2); color: var(--tinta); border: 1px solid var(--raya); border-radius: 999px; padding: 6px 14px; font-family: var(--f-rotulo); font-size: .95rem; }
+.barra button:disabled { opacity: .45; cursor: default; }
+#escenario-wrap { min-height: 0; display: grid; place-items: center; }
+#escenario { position: relative; touch-action: none; border-radius: 6px; overflow: hidden; box-shadow: 0 0 0 1px var(--raya); --r: 100px; --x: 300px; --y: 400px; }
+#escena { display: block; width: 100%; height: 100%; }
+#oscuridad { position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(circle var(--r) at var(--x) var(--y), rgba(255, 196, 120, .10) 0%, rgba(0, 0, 0, 0) 38%, rgba(6, 4, 8, .975) 100%);
+}
+#escenario { transition: --x .6s ease, --y .6s ease; }
+#escenario.siguiendo { transition: none; }
+.obj { cursor: pointer; }
+.obj.oculto { display: none; }
+.obj.encontrado { pointer-events: none; }
+.obj:focus { outline: none; }
+
+#linterna { position: absolute; left: 0; top: 0; width: calc(var(--r) * .3); height: calc(var(--r) * .75); pointer-events: none; transform: translate(calc(var(--x) - 50%), calc(var(--y) + var(--r) * .45)); filter: drop-shadow(0 0 6px rgba(0, 0, 0, .8)); }
+#murcielago { position: absolute; top: 8%; left: -15%; width: 13%; pointer-events: none; opacity: 0; }
+#murcielago.vuela { animation: vuelo 3.2s ease-in-out forwards; }
+@keyframes vuelo {
+  0% { transform: translate(0, 0); opacity: 1; }
+  25% { transform: translate(260%, 60%); }
+  50% { transform: translate(480%, -10%); }
+  75% { transform: translate(720%, 50%); }
+  100% { transform: translate(980%, 0); opacity: 1; }
+}
+#fantasma { position: absolute; left: 9.5%; top: 31.5%; width: 16%; pointer-events: none; opacity: 0; }
+#fantasma.asoma { animation: asoma 2.6s ease-in-out forwards; }
+@keyframes asoma {
+  0% { opacity: 0; transform: translateY(40%); }
+  20%, 75% { opacity: .95; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(40%); }
+}
+#bocadillo { position: absolute; left: 22%; top: 27%; background: var(--papel); color: var(--papel-tinta); font-family: var(--f-display); font-size: 1.6rem; padding: 2px 12px; border-radius: 14px; pointer-events: none; opacity: 0; }
+#bocadillo.asoma { animation: asoma 2.6s ease-in-out forwards; }
+#aviso { position: absolute; left: 50%; bottom: 4%; transform: translateX(-50%); width: max-content; max-width: 88%; background: rgba(13, 10, 12, .88); border: 1px solid var(--raya); color: var(--tinta); padding: 8px 14px; border-radius: 10px; text-align: center; font-size: 1.05rem; pointer-events: none; transition: opacity .4s; }
+#aviso.fuera { opacity: 0; }
+
+#inventario { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; list-style: none; margin: 0; padding: 0; max-width: 460px; width: 100%; justify-self: center; }
+#inventario li { aspect-ratio: 1; max-width: 100%; border: 1px solid var(--raya); border-radius: 10px; background: var(--noche-2); display: grid; place-items: center; position: relative; }
+#inventario svg { width: 74%; height: 74%; filter: brightness(0) invert(.28); transition: filter .4s; }
+#inventario li.si svg { filter: drop-shadow(0 0 6px rgba(224, 135, 47, .7)); }
+#inventario li.misterio::after { content: "?"; position: absolute; font-family: var(--f-display); color: var(--tenue); font-size: 1.6rem; }
+#inventario li.misterio svg { opacity: 0; }
+
+.hoja { position: fixed; left: 0; right: 0; bottom: 0; z-index: 5; background: var(--noche-2); border-top: 2px solid var(--farol); padding: 20px max(16px, env(safe-area-inset-right, 0px)) calc(20px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px; box-shadow: 0 -20px 40px rgba(0, 0, 0, .6); }
+.hoja svg { width: 84px; height: 84px; filter: drop-shadow(0 0 12px rgba(224, 135, 47, .6)); }
+.hoja h2 { font-family: var(--f-display); font-weight: 400; color: var(--farol); font-size: 2rem; margin: 0; }
+.hoja p { margin: 0; max-width: 36ch; font-size: 1.15rem; line-height: 1.35; }
+.chip { font-family: var(--f-rotulo); background: var(--sangre); color: var(--tinta); border-radius: 999px; padding: 5px 14px; font-size: 1.05rem; }
+
+/* ---------- Ficha de ingreso ---------- */
+.ficha { background: var(--papel); color: var(--papel-tinta); width: min(100%, 360px); box-sizing: border-box; padding: 18px 20px 22px; border-radius: 3px; text-align: left; position: relative; box-shadow: 0 10px 30px rgba(0, 0, 0, .5); transform: rotate(-1.2deg); }
+.ficha h2 { font-family: var(--f-rotulo); font-weight: 400; font-size: 1.05rem; letter-spacing: .08em; margin: 0 0 10px; border-bottom: 2px solid var(--papel-tinta); padding-bottom: 6px; }
+.ficha dl { display: grid; grid-template-columns: auto 1fr; gap: 6px 12px; margin: 0; font-size: 1.1rem; }
+.ficha dt { font-family: var(--f-rotulo); font-size: .9rem; letter-spacing: .04em; align-self: baseline; }
+.ficha dd { margin: 0; font-weight: 700; min-width: 0; font-variant-numeric: tabular-nums; }
+.sello { position: absolute; right: 16px; top: 62px; font-family: var(--f-display); color: var(--sangre); border: 3px solid var(--sangre); border-radius: 6px; padding: 0 10px; font-size: 1.7rem; transform: rotate(-14deg); opacity: .85; }
+.programa { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; font-size: 1.15rem; }
+.programa b { font-family: var(--f-rotulo); color: var(--farol); font-weight: 400; margin-right: 6px; font-variant-numeric: tabular-nums; }
+.acciones { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+#texto-compartir { width: min(100%, 360px); font: inherit; font-size: .95rem; background: var(--noche-2); color: var(--tinta); border: 1px solid var(--raya); border-radius: 8px; padding: 8px; resize: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  #murcielago, #fantasma, #bocadillo { animation: none !important; }
+  #escenario { transition: none; }
+}
+</style>
+
+</head>
+<body>
+<div id="app">
+
+  <!-- ===================== INICIO ===================== -->
+  <section id="inicio" class="pantalla">
+    <p class="antetitulo">Halloween en Puente Tablas</p>
+    <h1 class="titulo">Hospital 1880</h1>
+    <p class="entrada">La sala de espera se ha quedado a oscuras. Usa la linterna para encontrar <strong>6 objetos perdidos</strong>… y la <strong>llave</strong> para escapar.</p>
+    <ul class="lista-objetos" aria-label="Objetos que tienes que encontrar">
+      <li><svg viewBox="0 0 100 100" aria-hidden="true"><use href="#i-farol"/></svg></li>
+      <li><svg viewBox="0 0 100 100" aria-hidden="true"><use href="#i-frasco"/></svg></li>
+      <li><svg viewBox="0 0 100 100" aria-hidden="true"><use href="#i-muneco"/></svg></li>
+      <li><svg viewBox="0 0 100 100" aria-hidden="true"><use href="#i-hamburguesa"/></svg></li>
+      <li><svg viewBox="0 0 100 100" aria-hidden="true"><use href="#i-reloj"/></svg></li>
+      <li><svg viewBox="0 0 100 100" aria-hidden="true"><use href="#i-aceitera"/></svg></li>
+      <li><svg viewBox="0 0 100 100" aria-hidden="true"><use href="#i-llave"/></svg></li>
+    </ul>
+    <button id="btn-entrar" class="boton-principal" type="button">Entrar al hospital</button>
+    <p class="pie">Para todas las edades · <strong>Sábado 31 de octubre</strong> · Pasaje del Terror a las 20:30h · Campo de Fútbol de Puente Tablas</p>
+  </section>
+
+  <!-- ===================== JUEGO ===================== -->
+  <section id="juego" class="pantalla" hidden>
+    <div class="barra">
+      <span class="marca">Hospital 1880</span>
+      <span class="dato" id="progreso">0 / 7</span>
+      <span class="dato" id="tiempo">0:00</span>
+      <button id="btn-pista" type="button">Pista</button>
+      <button id="btn-sonido" type="button" aria-pressed="true" aria-label="Sonido">🔊</button>
+    </div>
+
+    <div id="escenario-wrap">
+      <div id="escenario">
+        <svg id="escena" viewBox="0 0 600 900" preserveAspectRatio="none" role="img" aria-label="Sala de espera del Hospital 1880">
+          <defs>
+            <pattern id="papel" width="60" height="60" patternUnits="userSpaceOnUse"><rect width="60" height="60" fill="#4b3f3a"/><path d="M30 10 l7 15 -7 15 -7 -15z" fill="#56473f"/></pattern>
+            <pattern id="azulejo" width="40" height="40" patternUnits="userSpaceOnUse"><rect width="40" height="40" fill="#5f6d61"/><rect x="1.5" y="1.5" width="37" height="37" fill="#7f9080"/></pattern>
+            <pattern id="suelo" width="80" height="80" patternUnits="userSpaceOnUse"><rect width="80" height="80" fill="#3a322d"/><rect width="40" height="40" fill="#5a4e45"/><rect x="40" y="40" width="40" height="40" fill="#5a4e45"/></pattern>
+
+            <symbol id="silla" viewBox="0 0 60 200">
+              <rect x="4" y="0" width="52" height="62" rx="8" fill="#a3262a"/>
+              <rect x="10" y="6" width="40" height="8" rx="4" fill="#c03a3c"/>
+              <rect x="27" y="62" width="6" height="12" fill="#7d7d7d"/>
+              <rect x="0" y="72" width="60" height="18" rx="6" fill="#b52e31"/>
+              <rect x="27" y="90" width="6" height="104" fill="#6e6e6e"/>
+              <rect x="8" y="190" width="44" height="8" rx="3" fill="#555"/>
+            </symbol>
+
+            <!-- Objetos (también se usan en el inventario) -->
+            <symbol id="i-farol" viewBox="0 0 100 100">
+              <path d="M38 22 a12 12 0 0 1 24 0" fill="none" stroke="#2b2420" stroke-width="5"/>
+              <path d="M32 24 h36 l-4 8 h-28z" fill="#3a2f28"/>
+              <rect x="36" y="32" width="28" height="44" rx="3" fill="#f4b860"/>
+              <path d="M50 42 q9 12 0 24 q-9 -12 0 -24z" fill="#fff3c4"/>
+              <rect x="36" y="32" width="28" height="44" rx="3" fill="none" stroke="#3a2f28" stroke-width="4"/>
+              <path d="M30 76 h40 l-3 9 h-34z" fill="#3a2f28"/>
+            </symbol>
+            <symbol id="i-frasco" viewBox="0 0 100 100">
+              <rect x="30" y="12" width="40" height="11" rx="3" fill="#6b5a4a"/>
+              <path d="M28 24 h44 v54 a9 9 0 0 1 -9 9 h-26 a9 9 0 0 1 -9 -9z" fill="#7fb592" fill-opacity=".55" stroke="#d6eadb" stroke-width="2.5"/>
+              <circle cx="41" cy="48" r="9" fill="#fbf7ee"/><circle cx="43" cy="49" r="4.5" fill="#3b7bd1"/><circle cx="43.5" cy="49.5" r="2" fill="#111"/>
+              <circle cx="60" cy="58" r="8" fill="#fbf7ee"/><circle cx="58" cy="59" r="4" fill="#4a9a45"/><circle cx="57.5" cy="59" r="1.8" fill="#111"/>
+              <circle cx="45" cy="72" r="7.5" fill="#fbf7ee"/><circle cx="47" cy="71" r="3.6" fill="#8a4b20"/><circle cx="47.5" cy="70.5" r="1.6" fill="#111"/>
+              <path d="M34 30 v40" stroke="#fff" stroke-opacity=".5" stroke-width="3" stroke-linecap="round"/>
+            </symbol>
+            <symbol id="i-muneco" viewBox="0 0 100 100">
+              <path d="M30 58 l20 -16 20 16 6 32 h-52z" fill="#7a2e3a"/>
+              <path d="M24 90 h52" stroke="#f3e8d6" stroke-width="5" stroke-dasharray="4 3"/>
+              <path d="M32 50 l-12 18 M68 50 l12 18" stroke="#f1d9c0" stroke-width="6" stroke-linecap="round"/>
+              <circle cx="50" cy="30" r="16" fill="#f1d9c0"/>
+              <path d="M33 28 q2 -18 17 -18 q15 0 17 18 q-6 -9 -17 -9 q-11 0 -17 9z" fill="#6b3f22"/>
+              <circle cx="44" cy="31" r="2.6" fill="#222"/><circle cx="56" cy="31" r="2.6" fill="#222"/>
+              <circle cx="40" cy="37" r="3" fill="#e79a9a"/><circle cx="60" cy="37" r="3" fill="#e79a9a"/>
+              <path d="M46 40 q4 3 8 0" stroke="#8a3a3a" stroke-width="2" fill="none"/>
+              <path d="M51 14 l-3 9" stroke="#3a2a1e" stroke-width="1.5"/>
+            </symbol>
+            <symbol id="i-hamburguesa" viewBox="0 0 100 100">
+              <path d="M18 46 q0 -26 32 -26 q32 0 32 26z" fill="#d98a3d"/>
+              <g fill="#fff4d6"><ellipse cx="38" cy="32" rx="2.5" ry="1.5"/><ellipse cx="52" cy="28" rx="2.5" ry="1.5"/><ellipse cx="64" cy="35" rx="2.5" ry="1.5"/><ellipse cx="46" cy="39" rx="2.5" ry="1.5"/></g>
+              <path d="M16 48 q6 6 12 0 q6 6 12 0 q6 6 12 0 q6 6 12 0 q6 6 12 0 q6 6 8 0 v4 h-68z" fill="#6cbf4a"/>
+              <path d="M18 54 h64 l-8 10 -10 -10z" fill="#f5c542"/>
+              <rect x="17" y="56" width="66" height="12" rx="6" fill="#5b3420"/>
+              <path d="M18 70 h64 q0 12 -12 12 h-40 q-12 0 -12 -12z" fill="#d98a3d"/>
+            </symbol>
+            <symbol id="i-reloj" viewBox="0 0 100 100">
+              <path d="M44 14 a6 6 0 1 1 12 0" fill="none" stroke="#c9a24a" stroke-width="4"/>
+              <rect x="45" y="16" width="10" height="9" rx="2" fill="#c9a24a"/>
+              <circle cx="50" cy="58" r="32" fill="#c9a24a"/>
+              <circle cx="50" cy="58" r="25" fill="#f6efdc"/>
+              <g stroke="#3a2a1e" stroke-width="2.5"><path d="M50 36 v5"/><path d="M50 75 v5"/><path d="M28 58 h5"/><path d="M67 58 h5"/></g>
+              <path d="M50 58 l-11 6" stroke="#3a2a1e" stroke-width="4" stroke-linecap="round"/>
+              <path d="M50 58 v19" stroke="#3a2a1e" stroke-width="2.5" stroke-linecap="round"/>
+              <circle cx="50" cy="58" r="2.5" fill="#3a2a1e"/>
+              <path d="M30 40 l8 8" stroke="#fff" stroke-opacity=".5" stroke-width="2"/>
+            </symbol>
+            <symbol id="i-aceitera" viewBox="0 0 100 100">
+              <path d="M56 30 q16 -10 30 -22" stroke="#9aa3ad" stroke-width="5" fill="none" stroke-linecap="round"/>
+              <path d="M38 14 h24 v10 q14 8 14 26 v30 a8 8 0 0 1 -8 8 h-36 a8 8 0 0 1 -8 -8 v-30 q0 -18 14 -26z" fill="#d6e4e8" fill-opacity=".45" stroke="#e8f0f2" stroke-width="2.5"/>
+              <path d="M27 52 h46 v28 a6 6 0 0 1 -6 6 h-34 a6 6 0 0 1 -6 -6z" fill="#c9a227"/>
+              <path d="M27 52 q23 6 46 0" fill="#e0bd3a"/>
+              <rect x="36" y="8" width="28" height="8" rx="2" fill="#9aa3ad"/>
+              <path d="M32 58 v20" stroke="#fff" stroke-opacity=".45" stroke-width="3" stroke-linecap="round"/>
+              <path d="M78 74 q10 -14 18 -10 q-6 12 -18 10z" fill="#5d7a2e"/>
+              <ellipse cx="84" cy="84" rx="6" ry="8" fill="#3f4a1e"/>
+            </symbol>
+            <symbol id="i-linterna" viewBox="0 0 40 100">
+              <path d="M4 4 h32 l-6 26 h-20z" fill="#9aa3ad"/>
+              <ellipse cx="20" cy="4" rx="16" ry="3.5" fill="#fff6d8"/>
+              <rect x="10" y="30" width="20" height="62" rx="5" fill="#3b4048"/>
+              <rect x="10" y="40" width="20" height="5" fill="#59606a"/>
+              <rect x="16" y="54" width="8" height="12" rx="2" fill="#d4202a"/>
+            </symbol>
+            <symbol id="i-llave" viewBox="0 0 100 100">
+              <circle cx="28" cy="50" r="15" fill="none" stroke="#b07a3a" stroke-width="7"/>
+              <rect x="42" y="46" width="44" height="8" rx="3" fill="#b07a3a"/>
+              <rect x="70" y="54" width="7" height="13" fill="#b07a3a"/><rect x="80" y="54" width="6" height="9" fill="#b07a3a"/>
+              <circle cx="28" cy="50" r="6" fill="none" stroke="#8a5a28" stroke-width="2"/>
+            </symbol>
+          </defs>
+
+          <!-- Paredes y suelo -->
+          <rect width="600" height="480" fill="url(#papel)"/>
+          <rect y="470" width="600" height="14" fill="#2c2420"/>
+          <rect y="484" width="600" height="276" fill="url(#azulejo)"/>
+          <rect y="484" width="600" height="276" fill="#2a1f1a" opacity=".35"/>
+          <ellipse cx="330" cy="520" rx="70" ry="28" fill="#2a1f1a" opacity=".35"/>
+          <ellipse cx="520" cy="430" rx="40" ry="60" fill="#2a1f1a" opacity=".3"/>
+          <rect y="760" width="600" height="140" fill="url(#suelo)"/>
+          <rect y="754" width="600" height="8" fill="#241c18"/>
+
+          <!-- Telarañas -->
+          <g stroke="#cfc6b8" stroke-opacity=".35" stroke-width="1.2" fill="none">
+            <path d="M0 0 L90 0 M0 0 L0 90 M0 0 L70 60"/><path d="M0 30 Q20 22 28 0 M0 60 Q40 48 56 0 M0 85 Q55 70 85 0"/>
+          </g>
+
+          <!-- Rótulo -->
+          <g transform="translate(205 38)">
+            <rect width="190" height="50" rx="4" fill="#1f1a17" stroke="#8a6a3a" stroke-width="3"/>
+            <text x="95" y="33" text-anchor="middle" font-family="IM Fell English SC, Georgia, serif" font-size="23" fill="#d9c7a0">Sala de espera</text>
+          </g>
+
+          <!-- Ventana con luna -->
+          <g transform="translate(412 108)">
+            <rect width="150" height="180" fill="#141a33"/>
+            <circle cx="98" cy="58" r="28" fill="#f1dca0"/>
+            <circle cx="88" cy="52" r="5" fill="#d9c486"/><circle cx="106" cy="68" r="4" fill="#d9c486"/>
+            <!-- Cerro y Castillo de Santa Catalina -->
+            <path d="M0 180 V150 Q40 112 82 118 Q118 122 150 150 V180z" fill="#0b0f20"/>
+            <path d="M58 122 v-14 h5 v4 h4 v-4 h5 v4 h4 v-4 h5 v14z M88 120 v-22 h4 v3 h3 v-3 h4 v22z" fill="#0b0f20"/>
+            <path d="M18 20 l30 50 -8 30" stroke="#9aa6c9" stroke-opacity=".5" stroke-width="1.5" fill="none"/>
+            <rect width="150" height="180" fill="none" stroke="#2a201b" stroke-width="10"/>
+            <path d="M75 0 v180 M0 90 h150" stroke="#2a201b" stroke-width="6"/>
+            <rect x="-12" y="180" width="174" height="12" fill="#2a201b"/>
+          </g>
+
+          <!-- Retrato del doctor -->
+          <g transform="translate(240 135)">
+            <rect width="110" height="140" fill="#6b4f2a"/>
+            <rect x="10" y="10" width="90" height="120" fill="#1c1715"/>
+            <path d="M22 130 q0 -40 33 -40 q33 0 33 40z" fill="#2e2724"/>
+            <circle cx="55" cy="66" r="17" fill="#2e2724"/>
+            <rect x="40" y="26" width="30" height="26" fill="#2e2724"/><rect x="32" y="50" width="46" height="6" fill="#2e2724"/>
+            <circle cx="49" cy="66" r="2.2" fill="#e0872f"/><circle cx="61" cy="66" r="2.2" fill="#e0872f"/>
+          </g>
+
+          <!-- Puerta de la consulta -->
+          <g transform="translate(30 250)">
+            <rect x="-8" y="-8" width="166" height="518" fill="none" stroke="#2a1d15" stroke-width="10"/>
+            <rect width="150" height="510" fill="#4a3326"/>
+            <rect x="20" y="30" width="110" height="170" fill="#1d2a2a"/>
+            <path d="M30 40 l40 60" stroke="#6f8a8a" stroke-opacity=".4" stroke-width="2"/>
+            <rect x="35" y="206" width="80" height="22" rx="3" fill="#d9c7a0"/>
+            <text x="75" y="222" text-anchor="middle" font-family="IM Fell English SC, Georgia, serif" font-size="14" fill="#3a2a1e">Consulta</text>
+            <rect x="15" y="245" width="120" height="105" fill="none" stroke="#3a271c" stroke-width="5"/>
+            <rect x="15" y="365" width="120" height="125" fill="none" stroke="#3a271c" stroke-width="5"/>
+            <circle cx="133" cy="300" r="7" fill="#c9a24a"/>
+          </g>
+
+          <!-- Perchero con bata -->
+          <g transform="translate(222 380)">
+            <rect x="-4" y="0" width="8" height="380" fill="#2e211a"/>
+            <path d="M-30 380 l30 -30 30 30" stroke="#2e211a" stroke-width="8" fill="none"/>
+            <path d="M0 22 q-24 0 -26 18 M0 22 q24 0 26 18" stroke="#2e211a" stroke-width="5" fill="none"/>
+            <path d="M-26 40 l-22 26 v150 h44 v-150z" fill="#cfcabf" opacity=".85"/>
+            <path d="M-26 66 v150" stroke="#a8a297" stroke-width="2"/>
+          </g>
+
+          <!-- Sillas de la sala de espera -->
+          <rect x="236" y="660" width="200" height="8" fill="#5a5a5a"/>
+          <use href="#silla" x="244" y="560" width="60" height="200"/>
+          <use href="#silla" x="308" y="560" width="60" height="200"/>
+          <use href="#silla" x="372" y="560" width="60" height="200"/>
+
+          <!-- Estantería con frascos -->
+          <g>
+            <rect x="398" y="340" width="194" height="10" fill="#3b2a20"/>
+            <path d="M412 350 v22 h14 M574 350 v22 h-14" stroke="#3b2a20" stroke-width="5" fill="none"/>
+            <rect x="408" y="290" width="30" height="50" rx="5" fill="#9bb8a2" fill-opacity=".5" stroke="#d6eadb" stroke-width="2"/><rect x="408" y="282" width="30" height="9" fill="#6b5a4a"/>
+            <rect x="506" y="298" width="26" height="42" rx="5" fill="#c99a45" fill-opacity=".55" stroke="#ead9b5" stroke-width="2"/><rect x="506" y="291" width="26" height="8" fill="#6b5a4a"/>
+            <rect x="544" y="286" width="34" height="54" rx="6" fill="#8b6fa8" fill-opacity=".45" stroke="#ddd0ea" stroke-width="2"/><rect x="544" y="278" width="34" height="9" fill="#6b5a4a"/>
+          </g>
+
+          <!-- Mostrador -->
+          <g>
+            <rect x="420" y="590" width="172" height="170" fill="#3b2a20"/>
+            <rect x="412" y="580" width="188" height="14" fill="#5a4030"/>
+            <rect x="436" y="612" width="66" height="128" fill="none" stroke="#2c1f17" stroke-width="5"/>
+            <rect x="512" y="612" width="66" height="128" fill="none" stroke="#2c1f17" stroke-width="5"/>
+            <path d="M432 580 l6 -10 h44 l4 10z" fill="#e6dcc8"/>
+            <path d="M556 580 a12 12 0 0 1 24 0z" fill="#c9a24a"/><rect x="566" y="562" width="4" height="6" fill="#c9a24a"/>
+          </g>
+
+          <!-- Objetos escondidos -->
+          <g class="obj" data-id="farol" transform="translate(92 748) scale(.78)" tabindex="0" role="button" aria-label="Objeto escondido"><circle cx="50" cy="50" r="70" fill="transparent"/><use href="#i-farol" width="100" height="100"/></g>
+          <g class="obj" data-id="frasco" transform="translate(448 274) scale(.68)" tabindex="0" role="button" aria-label="Objeto escondido"><circle cx="50" cy="50" r="70" fill="transparent"/><use href="#i-frasco" width="100" height="100"/></g>
+          <g class="obj" data-id="muneco" transform="translate(312 566) scale(.6)" tabindex="0" role="button" aria-label="Objeto escondido"><circle cx="50" cy="50" r="70" fill="transparent"/><use href="#i-muneco" width="100" height="100"/></g>
+          <g class="obj" data-id="hamburguesa" transform="translate(252 718) scale(.42)" tabindex="0" role="button" aria-label="Objeto escondido"><circle cx="50" cy="50" r="80" fill="transparent"/><use href="#i-hamburguesa" width="100" height="100"/></g>
+          <g class="obj" data-id="reloj" transform="translate(500 548) scale(.38)" tabindex="0" role="button" aria-label="Objeto escondido"><circle cx="50" cy="50" r="85" fill="transparent"/><use href="#i-reloj" width="100" height="100"/></g>
+          <g class="obj" data-id="aceitera" transform="translate(428 236) scale(.5)" tabindex="0" role="button" aria-label="Objeto escondido"><circle cx="50" cy="50" r="75" fill="transparent"/><use href="#i-aceitera" width="100" height="100"/></g>
+          <g class="obj oculto" data-id="llave" transform="translate(232 398) scale(.5)" tabindex="0" role="button" aria-label="Objeto escondido"><circle cx="50" cy="50" r="80" fill="transparent"/><use href="#i-llave" width="100" height="100"/></g>
+        </svg>
+
+        <div id="oscuridad"></div>
+        <svg id="linterna" width="16" height="40" viewBox="0 0 40 100" aria-hidden="true"><use href="#i-linterna"/></svg>
+        <svg id="murcielago" viewBox="0 0 120 50" aria-hidden="true"><path d="M60 20 q-10 -14 -30 -16 q8 8 4 14 q-12 -6 -30 2 q14 2 18 12 q14 -6 26 2 q4 -6 12 -14 q8 8 12 14 q12 -8 26 -2 q4 -10 18 -12 q-18 -8 -30 -2 q-4 -6 4 -14 q-20 2 -30 16z" fill="#1b1220"/><circle cx="56" cy="20" r="2" fill="#e0872f"/><circle cx="64" cy="20" r="2" fill="#e0872f"/></svg>
+        <svg id="fantasma" viewBox="0 0 100 120" aria-hidden="true"><path d="M50 6 q38 0 38 44 v62 l-12 -10 -13 10 -13 -10 -13 10 -13 -10 -12 10 v-62 q0 -44 38 -44z" fill="#f3efe6"/><ellipse cx="38" cy="48" rx="6" ry="9" fill="#2a2228"/><ellipse cx="62" cy="48" rx="6" ry="9" fill="#2a2228"/><ellipse cx="50" cy="72" rx="7" ry="9" fill="#2a2228"/></svg>
+        <div id="bocadillo" aria-hidden="true">¡Bu!</div>
+        <div id="aviso" role="status">Mueve el dedo para alumbrar con la linterna</div>
+      </div>
+    </div>
+
+    <ul id="inventario" aria-label="Objetos encontrados">
+      <li data-id="farol"><svg viewBox="0 0 100 100" aria-hidden="true"><use href="#i-farol"/></svg></li>
+      <li data-id="frasco"><svg viewBox="0 0 100 100" aria-hidden="true"><use href="#i-frasco"/></svg></li>
+      <li data-id="muneco"><svg viewBox="0 0 100 100" aria-hidden="true"><use href="#i-muneco"/></svg></li>
+      <li data-id="hamburguesa"><svg viewBox="0 0 100 100" aria-hidden="true"><use href="#i-hamburguesa"/></svg></li>
+      <li data-id="reloj"><svg viewBox="0 0 100 100" aria-hidden="true"><use href="#i-reloj"/></svg></li>
+      <li data-id="aceitera"><svg viewBox="0 0 100 100" aria-hidden="true"><use href="#i-aceitera"/></svg></li>
+      <li data-id="llave" class="misterio"><svg viewBox="0 0 100 100" aria-hidden="true"><use href="#i-llave"/></svg></li>
+    </ul>
+
+    <div id="hallazgo" class="hoja" role="dialog" aria-modal="true" aria-labelledby="hallazgo-titulo" hidden>
+      <svg viewBox="0 0 100 100" aria-hidden="true"><use id="hallazgo-icono" href="#i-farol"/></svg>
+      <h2 id="hallazgo-titulo">¡El farol!</h2>
+      <p id="hallazgo-texto"></p>
+      <span class="chip" id="hallazgo-dato"></span>
+      <button id="btn-seguir" class="boton-principal" type="button">Seguir buscando</button>
+    </div>
+  </section>
+
+  <!-- ===================== FINAL ===================== -->
+  <section id="fin" class="pantalla" hidden>
+    <p class="antetitulo">¡Has encontrado la llave!</p>
+    <h1 class="titulo">¡Has escapado!</h1>
+    <p class="entrada" id="fin-resumen">Has salido del Hospital 1880 en 1:23.</p>
+    <div class="ficha">
+      <h2>Hospital 1880 · Ficha de ingreso</h2>
+      <dl>
+        <dt>Paciente nº</dt><dd id="f-num">1880-427</dd>
+        <dt>Nombre</dt><dd id="f-nombre">Doctor Calabaza</dd>
+        <dt>Diagnóstico</dt><dd id="f-diag">Valentía aguda</dd>
+        <dt>Huida en</dt><dd id="f-tiempo">1:23</dd>
+        <dt>Próxima cita</dt><dd>31 de octubre, 20:30h</dd>
+      </dl>
+      <span class="sello">Alta</span>
+    </div>
+    <p class="entrada">¿Te atreves con el de verdad?</p>
+    <ul class="programa">
+      <li><b>19:00h</b>Truco o trato</li>
+      <li><b>20:30h</b>Pasaje del Terror · 2 €</li>
+      <li><b>22:00h</b>Concurso de disfraces</li>
+      <li>Música y barra a precios populares</li>
+      <li><b>Dónde</b>Campo de Fútbol de Puente Tablas</li>
+    </ul>
+    <p class="pie"><strong>Sábado 31 de octubre · Puente Tablas (Jaén)</strong><br>Para todas las edades. Niños y niñas, siempre acompañados.</p>
+    <div class="acciones">
+      <a id="btn-whatsapp" class="boton-principal" href="https://wa.me/" target="_blank" rel="noopener">Compartir por WhatsApp</a>
+      <button id="btn-copiar" class="boton-secundario" type="button">Copiar mensaje</button>
+      <button id="btn-otra" class="boton-secundario" type="button">Volver a jugar</button>
+    </div>
+    <label class="pie" for="texto-compartir">Mensaje para compartir</label>
+    <textarea id="texto-compartir" rows="4" readonly></textarea>
+    <p class="pie">Organiza: AA.VV. Puente Ibérico</p>
+  </section>
+</div>
+
+<script>
+// Enlace público del juego: rellenar cuando esté en la web de la asociación.
+const URL_JUEGO = "https://puentetablas.es/halloween/juego/";
+
+const OBJETOS = {
+  farol:       { titulo: "¡El farol!",            texto: "Nuestros voluntarios te guían con faroles como este, en el truco o trato y en el pasaje.", dato: "19:00h · Truco o trato" },
+  frasco:      { titulo: "¡Un frasco con ojos!",   texto: "Alguien te está mirando… Dentro del hospital te esperan muchos más sustos.", dato: "20:30h · Pasaje del Terror · 2 €" },
+  muneco:      { titulo: "¡El muñeco antiguo!",   texto: "Lleva desde 1880 esperando su turno… y se muere de ganas de disfrazarse.", dato: "22:00h · Concurso de disfraces" },
+  hamburguesa: { titulo: "¿Una hamburguesa?",     texto: "Pasar miedo da mucha hambre. ¡Recupera fuerzas con nuestras hamburguesas tradicionales!", dato: "Barra a precios populares" },
+  reloj:       { titulo: "¡El reloj parado!",     texto: "Se paró a las 20:30 la noche que cerró el hospital… y a esa hora vuelve a abrir.", dato: "Todas las edades · Grupos reducidos" },
+  aceitera:    { titulo: "¡Una aceitera!",        texto: "¿Aceite en un hospital? En Jaén, el aceite de oliva lo cura todo… ¡hasta el miedo!", dato: "Campo de Fútbol de Puente Tablas" },
+  llave:       { titulo: "¡La llave!",            texto: "", dato: "" }
+};
+const TOTAL = 7;
+const NOMBRES = ["Doctor Calabaza", "Enfermera Telaraña", "Fantasma Tímido", "Momia Cosquillas", "Vampiro Vegetariano", "Bruja Despistada", "Esqueleto Bailón", "Conde Perrito", "Murciélaga Valiente"];
+const DIAGNOSTICOS = ["Valentía aguda", "Ataque de risa nocturno", "Miedo de cosquillas", "Hambre de hamburguesa", "Curiosidad crónica", "Escalofríos leves"];
+
+const $ = (s) => document.querySelector(s);
+// Estadísticas: solo envía datos si la persona ha aceptado las cookies (si no, no hace nada)
+function medir(evento, datos) { try { if (window.gtag) window.gtag("event", evento, datos || {}); } catch (e) {} }
+const escenario = $("#escenario"), wrap = $("#escenario-wrap");
+let state = { fase: "inicio", encontrados: [], t0: 0, tFin: 0, llave: false, sonido: true, nombre: "", diag: "", num: "" };
+let reloj = null, vigia = null, avisoTimer = null, pistaLista = 0, murcielagoTimer = null, ctx = null;
+
+try { const v = localStorage.getItem("h1880-sonido"); if (v !== null) state.sonido = v === "1"; } catch (e) {}
+
+/* ---------- Sonido (Web Audio, sin archivos) ---------- */
+function audio() {
+  if (!state.sonido) return null;
+  try { ctx = ctx || new (window.AudioContext || window.webkitAudioContext)(); if (ctx.state === "suspended") ctx.resume(); } catch (e) { return null; }
+  return ctx;
+}
+function nota(f, ini, dur, tipo = "triangle", vol = .18, f2) {
+  const a = audio(); if (!a) return;
+  const o = a.createOscillator(), g = a.createGain(), t = a.currentTime + ini;
+  o.type = tipo; o.frequency.setValueAtTime(f, t); if (f2) o.frequency.exponentialRampToValueAtTime(f2, t + dur);
+  g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + .02); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  o.connect(g).connect(a.destination); o.start(t); o.stop(t + dur + .05);
+}
+const sonidoHallazgo = () => { nota(660, 0, .25); nota(990, .12, .35); };
+const sonidoBu = () => { nota(420, 0, .9, "sine", .16, 180); nota(436, 0, .9, "sine", .1, 190); };
+const sonidoLlave = () => { nota(140, 0, .5, "sawtooth", .07, 90); nota(880, .45, .2); nota(1320, .55, .3); };
+const sonidoFinal = () => { [523, 659, 784, 1046].forEach((f, i) => nota(f, i * .12, .4)); };
+
+/* ---------- Escenario y linterna ---------- */
+function ajustar() {
+  const r = wrap.getBoundingClientRect();
+  let w = r.width, h = r.height;
+  if (w / h > 2 / 3) w = h * 2 / 3; else h = w * 1.5;
+  escenario.style.width = w + "px"; escenario.style.height = h + "px";
+  escenario.style.setProperty("--r", (w * 0.2) + "px");
+}
+let luzX = 0, luzY = 0, candidato = null, desde = 0;
+function luz(x, y) {
+  const e = escenario.getBoundingClientRect();
+  luzX = Math.min(Math.max(x, 0), e.width); luzY = Math.min(Math.max(y, 0), e.height);
+  escenario.style.setProperty("--x", luzX + "px"); escenario.style.setProperty("--y", luzY + "px");
+}
+function luzEvento(e) {
+  const r = escenario.getBoundingClientRect();
+  // Con el dedo, la luz sale por encima para que el dedo no tape lo que alumbra
+  const sube = e.pointerType === "mouse" ? 0 : parseFloat(escenario.style.getPropertyValue("--r")) * .95;
+  luz(e.clientX - r.left, e.clientY - r.top - sube);
+}
+escenario.addEventListener("pointerdown", (e) => {
+  escenario.classList.add("siguiendo"); luzEvento(e); ocultarAviso();
+  try { escenario.setPointerCapture(e.pointerId); } catch (err) {}
+});
+escenario.addEventListener("pointermove", (e) => { if (e.pointerType === "mouse" || e.buttons) { escenario.classList.add("siguiendo"); luzEvento(e); } });
+escenario.addEventListener("pointerup", () => escenario.classList.remove("siguiendo"));
+escenario.addEventListener("pointercancel", () => escenario.classList.remove("siguiendo"));
+
+// Un objeto se encuentra cuando queda en el centro de la luz durante medio segundo
+function vigilarLuz() {
+  if (state.fase !== "juego" || !$("#hallazgo").hidden) { candidato = null; return; }
+  const e = escenario.getBoundingClientRect(), radio = parseFloat(escenario.style.getPropertyValue("--r")) * .36;
+  let cerca = null;
+  document.querySelectorAll(".obj:not(.encontrado):not(.oculto)").forEach((g) => {
+    const b = g.querySelector("use").getBoundingClientRect();
+    const d = Math.hypot(b.left - e.left + b.width / 2 - luzX, b.top - e.top + b.height / 2 - luzY);
+    if (d < radio) cerca = g.dataset.id;
+  });
+  if (cerca !== candidato) { candidato = cerca; desde = Date.now(); }
+  else if (cerca && Date.now() - desde > 450) { candidato = null; encontrar(cerca); }
+}
+window.addEventListener("resize", () => { if (state.fase === "juego") ajustar(); });
+
+function aviso(texto, ms = 3200) {
+  const a = $("#aviso"); a.textContent = texto; a.classList.remove("fuera");
+  clearTimeout(avisoTimer); avisoTimer = setTimeout(ocultarAviso, ms);
+}
+function ocultarAviso() { $("#aviso").classList.add("fuera"); }
+
+/* ---------- Objetos ---------- */
+document.querySelectorAll(".obj").forEach((g) => {
+  g.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); encontrar(g.dataset.id); } });
+});
+
+function encontrar(id) {
+  if (state.fase !== "juego" || state.encontrados.includes(id) || !$("#hallazgo").hidden) return;
+  if (id === "llave" && !state.llave) return;
+  state.encontrados.push(id);
+  medir("objeto_encontrado", { objeto: id });
+  pintar();
+  if (id === "llave") { sonidoFinal(); terminar(); return; }
+  sonidoHallazgo();
+  const o = OBJETOS[id];
+  $("#hallazgo-icono").setAttribute("href", "#i-" + id);
+  $("#hallazgo-titulo").textContent = o.titulo;
+  $("#hallazgo-texto").textContent = o.texto;
+  $("#hallazgo-dato").textContent = o.dato;
+  $("#hallazgo").hidden = false;
+  $("#btn-seguir").focus();
+}
+
+$("#btn-seguir").addEventListener("click", () => {
+  $("#hallazgo").hidden = true;
+  const n = state.encontrados.length;
+  if (n === 3) susto();
+  if (n === TOTAL - 1 && !state.llave) {
+    state.llave = true; pintar();
+    setTimeout(() => { susto(); sonidoLlave(); aviso("Algo ha caído en el perchero… ¿será la llave?", 4200); }, 500);
+  }
+});
+
+function pintar() {
+  const n = state.encontrados.length;
+  $("#progreso").textContent = n + " / " + TOTAL;
+  document.querySelectorAll("#inventario li").forEach((li) => {
+    li.classList.toggle("si", state.encontrados.includes(li.dataset.id));
+    if (li.dataset.id === "llave") li.classList.toggle("misterio", !state.llave);
+  });
+  document.querySelectorAll(".obj").forEach((g) => {
+    g.classList.toggle("encontrado", state.encontrados.includes(g.dataset.id));
+    if (g.dataset.id === "llave") g.classList.toggle("oculto", !state.llave);
+  });
+}
+
+function susto() {
+  sonidoBu();
+  ["#fantasma", "#bocadillo"].forEach((s) => { const el = $(s); el.classList.remove("asoma"); void el.offsetWidth; el.classList.add("asoma"); });
+}
+
+function volarMurcielago() {
+  const m = $("#murcielago"); m.classList.remove("vuela"); void m.offsetWidth; m.classList.add("vuela");
+}
+
+/* ---------- Pista: la linterna se acerca a un objeto ---------- */
+$("#btn-pista").addEventListener("click", () => {
+  const quedan = [...document.querySelectorAll(".obj:not(.encontrado):not(.oculto)")];
+  if (!quedan.length) return;
+  const g = quedan[Math.floor(Math.random() * quedan.length)];
+  const r = g.getBoundingClientRect(), e = escenario.getBoundingClientRect();
+  const ang = Math.random() * Math.PI * 2, d = e.width * 0.17;
+  escenario.classList.remove("siguiendo");
+  luz(r.left - e.left + r.width / 2 + Math.cos(ang) * d, r.top - e.top + r.height / 2 + Math.sin(ang) * d);
+  aviso("La linterna tiembla… ¡algo hay por aquí cerca!", 2600);
+  pistaLista = Date.now() + 15000;
+  $("#btn-pista").disabled = true;
+});
+
+/* ---------- Tiempo ---------- */
+const mmss = (ms) => { const s = Math.max(0, Math.round(ms / 1000)); return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0"); };
+function tic() {
+  if (state.fase !== "juego") return;
+  $("#tiempo").textContent = mmss(Date.now() - state.t0);
+  $("#btn-pista").disabled = Date.now() < pistaLista;
+}
+
+/* ---------- Fases ---------- */
+function mostrar(fase) {
+  state.fase = fase;
+  ["inicio", "juego", "fin"].forEach((f) => { $("#" + f).hidden = f !== fase; });
+}
+
+function empezar() {
+  state.encontrados = []; state.llave = false; state.t0 = Date.now(); pistaLista = Date.now() + 10000;
+  mostrar("juego"); pintar(); ajustar();
+  medir("juego_empezar");
+  const e = escenario.getBoundingClientRect(); luz(e.width * .5, e.height * .55);
+  aviso("Mueve el dedo: la linterna alumbra por encima. Alumbra un objeto un momento para cogerlo.", 5000);
+  clearInterval(reloj); reloj = setInterval(tic, 500); tic();
+  clearInterval(vigia); vigia = setInterval(vigilarLuz, 100);
+  clearInterval(murcielagoTimer); murcielagoTimer = setInterval(volarMurcielago, 13000); setTimeout(volarMurcielago, 4000);
+}
+
+function terminar() {
+  state.tFin = Date.now();
+  medir("juego_terminado", { segundos: Math.round((state.tFin - state.t0) / 1000) });
+  clearInterval(reloj); clearInterval(murcielagoTimer); clearInterval(vigia);
+  state.nombre = NOMBRES[Math.floor(Math.random() * NOMBRES.length)];
+  state.diag = DIAGNOSTICOS[Math.floor(Math.random() * DIAGNOSTICOS.length)];
+  state.num = "1880-" + (100 + Math.floor(Math.random() * 900));
+  pintarFin();
+  mostrar("fin");
+  $("#fin").scrollTop = 0;
+}
+
+function pintarFin() {
+  const t = mmss(state.tFin - state.t0);
+  $("#fin-resumen").textContent = "Has salido del Hospital 1880 en " + t + ".";
+  $("#f-num").textContent = state.num; $("#f-nombre").textContent = state.nombre;
+  $("#f-diag").textContent = state.diag; $("#f-tiempo").textContent = t;
+  const msg = "👻 ¡He escapado del Hospital 1880 en " + t + "! Me han dado el alta como «" + state.nombre + "». ¿Te atreves?\n" +
+    "🎃 Halloween en Puente Tablas (Jaén) · Sábado 31 de octubre · Campo de Fútbol · Pasaje del Terror a las 20:30h" +
+    (URL_JUEGO ? "\nJuega aquí: " + URL_JUEGO : "");
+  $("#texto-compartir").value = msg;
+  $("#btn-whatsapp").href = "https://wa.me/?text=" + encodeURIComponent(msg);
+}
+
+$("#btn-whatsapp").addEventListener("click", () => medir("compartir_whatsapp", { lugar: "juego" }));
+$("#btn-entrar").addEventListener("click", () => { audio(); empezar(); });
+$("#btn-otra").addEventListener("click", () => empezar());
+$("#btn-copiar").addEventListener("click", () => {
+  medir("copiar_mensaje");
+  const ta = $("#texto-compartir"), b = $("#btn-copiar");
+  const ok = () => { b.textContent = "Mensaje copiado"; setTimeout(() => (b.textContent = "Copiar mensaje"), 2500); };
+  const fallo = () => { ta.focus(); ta.select(); b.textContent = "Mantén pulsado para copiar"; };
+  try { navigator.clipboard.writeText(ta.value).then(ok, fallo); } catch (e) { fallo(); }
+});
+$("#btn-sonido").addEventListener("click", () => {
+  state.sonido = !state.sonido;
+  try { localStorage.setItem("h1880-sonido", state.sonido ? "1" : "0"); } catch (e) {}
+  pintarSonido();
+});
+function pintarSonido() {
+  const b = $("#btn-sonido"); b.setAttribute("aria-pressed", String(state.sonido)); b.textContent = state.sonido ? "🔊" : "🔇";
+}
+
+/* ---------- Arranque (conserva la partida si la página se actualiza) ---------- */
+function start(data) {
+  if (data && data.fase) Object.assign(state, data);
+  pintarSonido();
+  if (state.fase === "juego") {
+    mostrar("juego"); pintar(); ajustar();
+    clearInterval(reloj); reloj = setInterval(tic, 500); tic();
+    clearInterval(vigia); vigia = setInterval(vigilarLuz, 100);
+    murcielagoTimer = setInterval(volarMurcielago, 13000);
+    const e = escenario.getBoundingClientRect(); luz(e.width * .5, e.height * .55);
+  } else if (state.fase === "fin") { pintarFin(); mostrar("fin"); }
+  else mostrar("inicio");
+}
+window.claude?.hot?.snapshot?.(() => ({ ...state }));
+window.claude?.hot?.ready ? window.claude.hot.ready(start) : start(window.claude?.hot?.data ?? {});
+</script>
+
+<div id="aviso-cookies" hidden>
+  <p>Usamos cookies de Google Analytics solo para contar las visitas de forma anónima y mejorar la web. <a href="../cookies.html">Más información</a></p>
+  <div><button id="cookies-si" type="button">Aceptar</button><button id="cookies-no" type="button">Rechazar</button></div>
+</div>
+<style>
+#aviso-cookies { position: fixed; left: 0; right: 0; bottom: 0; z-index: 50; background: #19110f; color: #efe6da; border-top: 2px solid #e0872f;
+  padding: 14px max(16px, env(safe-area-inset-right, 0px)) calc(14px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
+  display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; justify-content: center; font-family: Georgia, serif; font-size: 16px; line-height: 1.35; }
+#aviso-cookies p { margin: 0; max-width: 60ch; }
+#aviso-cookies a { color: #e0872f; }
+#aviso-cookies div { display: flex; gap: 10px; }
+#aviso-cookies button { font: inherit; border-radius: 999px; padding: 8px 18px; cursor: pointer; border: 1px solid #e0872f; background: transparent; color: #efe6da; }
+#aviso-cookies #cookies-si { background: #d4202a; border-color: #d4202a; }
+</style>
+<script>
+(function () {
+  var GA_ID = "G-E4KJ0QNBQF", CLAVE = "h1880-cookies", eleccion = null;
+  try { eleccion = localStorage.getItem(CLAVE); } catch (e) {}
+  function guardar(v) { try { localStorage.setItem(CLAVE, v); } catch (e) {} }
+  function cargar() {
+    window.dataLayer = window.dataLayer || [];
+    window.gtag = function () { window.dataLayer.push(arguments); };
+    window.gtag("js", new Date());
+    window.gtag("config", GA_ID);
+    var s = document.createElement("script"); s.async = true;
+    s.src = "https://www.googletagmanager.com/gtag/js?id=" + GA_ID;
+    document.head.appendChild(s);
+  }
+  if (eleccion === "si") { cargar(); return; }
+  if (eleccion === "no") return;
+  var aviso = document.getElementById("aviso-cookies"); aviso.hidden = false;
+  document.getElementById("cookies-si").onclick = function () { guardar("si"); aviso.hidden = true; cargar(); };
+  document.getElementById("cookies-no").onclick = function () { guardar("no"); aviso.hidden = true; };
+})();
+</script>
+
+</body>
+</html>
