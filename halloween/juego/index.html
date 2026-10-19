@@ -129,6 +129,14 @@ button, .boton { font: inherit; cursor: pointer; }
 .premio p { margin: 0; font-size: 1.1rem; line-height: 1.35; }
 .premio strong { color: var(--farol); font-family: var(--f-rotulo); font-weight: 400; }
 .premio .letra-pequena { color: var(--tenue); font-size: .95rem; }
+.editar { width: min(100%, 360px); text-align: left; border: 1px solid var(--raya); border-radius: 10px; padding: 10px 14px; background: var(--noche-2); }
+.editar summary { cursor: pointer; font-family: var(--f-rotulo); color: var(--farol); font-size: 1.05rem; }
+.editar[open] { display: grid; gap: 6px; }
+.editar label { font-family: var(--f-rotulo); color: var(--tenue); font-size: .95rem; margin-top: 4px; }
+.editar input { font: inherit; font-size: 1.1rem; font-weight: 700; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--raya); background: var(--noche); color: var(--tinta); width: 100%; box-sizing: border-box; }
+.editar input:focus { outline: 2px solid var(--farol); outline-offset: 1px; }
+#edit-aviso { margin: 0; min-height: 1.3em; color: var(--farol); font-size: 1rem; }
+.editar .boton-secundario { justify-self: start; }
 #ficha-figura { margin: 0; width: min(100%, 300px); display: grid; gap: 8px; }
 #ficha-figura img { width: 100%; height: auto; border-radius: 8px; box-shadow: 0 0 0 1px var(--raya); }
 #ficha-figura figcaption { color: var(--tenue); font-size: 1rem; line-height: 1.3; }
@@ -410,6 +418,15 @@ button, .boton { font: inherit; cursor: pointer; }
       </dl>
       <span class="sello">Alta</span>
     </div>
+    <details class="editar" id="editar">
+      <summary>✏️ Cambiar nombre y diagnóstico</summary>
+      <label for="edit-nombre">Nombre</label>
+      <input id="edit-nombre" type="text" maxlength="24" autocomplete="off" spellcheck="false">
+      <label for="edit-diag">Diagnóstico</label>
+      <input id="edit-diag" type="text" maxlength="30" autocomplete="off" spellcheck="false">
+      <p id="edit-aviso" role="status"></p>
+      <button id="btn-azar" class="boton-secundario" type="button">🎲 Otro al azar</button>
+    </details>
     <div class="premio">
       <p><strong>¡Tienes premio!</strong> Enseña esta ficha en la entrada del Pasaje del Terror el sábado 31 y llévate un detalle de Halloween.</p>
       <p class="letra-pequena">Uno por entrada, hasta agotar existencias. Guarda tu ficha para no perderla.</p>
@@ -643,12 +660,48 @@ function pintarFin() {
   $("#fin-resumen").textContent = "Has salido del Hospital 1880 en " + t + ".";
   $("#f-num").textContent = state.num; $("#f-nombre").textContent = state.nombre;
   $("#f-diag").textContent = state.diag; $("#f-tiempo").textContent = t;
+  $("#edit-nombre").value = state.nombre; $("#edit-diag").value = state.diag; $("#edit-aviso").textContent = "";
+  pintarMensaje();
+}
+
+function pintarMensaje() {
+  const t = mmss(state.tFin - state.t0);
   const msg = "👻 ¡He escapado del Hospital 1880 en " + t + "! Me han dado el alta como «" + state.nombre + "». ¿Te atreves?\n" +
     "🎃 Halloween en Puente Tablas (Jaén) · Sábado 31 de octubre · Campo de Fútbol · Pasaje del Terror a las 20:30h\n🎁 Si escapas, enseña tu ficha en la entrada del pasaje y llévate un detalle" +
     (URL_JUEGO ? "\nJuega aquí: " + URL_JUEGO : "");
   $("#texto-compartir").value = msg;
   $("#btn-whatsapp").href = "https://wa.me/?text=" + encodeURIComponent(msg);
 }
+
+/* ---------- Editar nombre y diagnóstico ---------- */
+const PROHIBIDAS = ["puta", "puto", "putas", "putos", "mierda", "gilipollas", "gilipolla", "cabron", "cabrona", "cabrones", "cono", "joder", "polla", "pollas",
+  "maricon", "maricones", "marica", "zorra", "zorras", "imbecil", "subnormal", "idiota", "mamon", "follar", "culo", "pene", "nazi", "retrasado",
+  "capullo", "cojones", "cojon", "hostia", "hostias", "guarra", "guarro", "tonto", "tonta", "estupido", "estupida", "mongolo", "puton", "ostia"];
+function apropiado(t) {
+  const palabras = t.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().split(/[^a-zñ0-9]+/);
+  return !palabras.some((p) => PROHIBIDAS.includes(p));
+}
+function refrescarFicha() {
+  $("#f-nombre").textContent = state.nombre; $("#f-diag").textContent = state.diag;
+  $("#ficha-figura").hidden = true;
+  pintarMensaje();
+}
+function editar(campo, input) {
+  const v = input.value.replace(/\s+/g, " ").trim();
+  if (!v) return;
+  if (!apropiado(v)) { $("#edit-aviso").textContent = "Prueba con otro nombre 😉"; return; }
+  $("#edit-aviso").textContent = "";
+  state[campo] = v; refrescarFicha();
+}
+$("#edit-nombre").addEventListener("input", (e) => editar("nombre", e.target));
+$("#edit-diag").addEventListener("input", (e) => editar("diag", e.target));
+$("#editar").addEventListener("toggle", () => { if ($("#editar").open) medir("editar_ficha"); });
+$("#btn-azar").addEventListener("click", () => {
+  state.nombre = NOMBRES[Math.floor(Math.random() * NOMBRES.length)];
+  state.diag = DIAGNOSTICOS[Math.floor(Math.random() * DIAGNOSTICOS.length)];
+  $("#edit-nombre").value = state.nombre; $("#edit-diag").value = state.diag; $("#edit-aviso").textContent = "";
+  refrescarFicha();
+});
 
 /* ---------- Ficha de alta como imagen (formato story, 1080×1920) ---------- */
 async function imagenFicha() {
@@ -688,7 +741,9 @@ async function imagenFicha() {
   filas.forEach(([k, v], i) => {
     const y = -fh / 2 + 190 + i * 88;
     x.font = '34px ' + ROTULO; x.fillText(k, -fw / 2 + 50, y);
-    x.font = '700 50px ' + TEXTO; x.fillText(v, -fw / 2 + 300, y);
+    let tam = 50; x.font = '700 50px ' + TEXTO;
+    while (x.measureText(v).width > fw - 350 && tam > 28) { tam -= 2; x.font = '700 ' + tam + 'px ' + TEXTO; }
+    x.fillText(v, -fw / 2 + 300, y);
   });
   x.save(); x.translate(fw / 2 - 70, -fh / 2 + 10); x.rotate(-0.24);
   x.strokeStyle = "#d4202a"; x.lineWidth = 7; x.strokeRect(-105, -62, 210, 100);
@@ -732,7 +787,7 @@ $("#btn-whatsapp").addEventListener("click", () => medir("compartir_whatsapp", {
 $("#btn-info").addEventListener("click", () => medir("ir_a_la_web", { lugar: "juego" }));
 $("#btn-info-inicio").addEventListener("click", () => medir("ir_a_la_web", { lugar: "juego_inicio" }));
 $("#btn-entrar").addEventListener("click", () => { audio(); empezar(); });
-$("#btn-otra").addEventListener("click", () => { $("#ficha-figura").hidden = true; empezar(); });
+$("#btn-otra").addEventListener("click", () => { $("#ficha-figura").hidden = true; $("#editar").open = false; empezar(); });
 $("#btn-copiar").addEventListener("click", () => {
   medir("copiar_mensaje");
   const ta = $("#texto-compartir"), b = $("#btn-copiar");
