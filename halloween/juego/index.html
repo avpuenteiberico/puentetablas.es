@@ -54,6 +54,7 @@ button, .boton { font: inherit; cursor: pointer; }
 .lista-objetos { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; padding: 0; margin: 0; list-style: none; }
 .lista-objetos li { width: 52px; height: 52px; border: 1px solid var(--raya); border-radius: 50%; display: grid; place-items: center; background: var(--noche-2); }
 .lista-objetos svg { width: 36px; height: 36px; filter: brightness(0) invert(.35); }
+.aviso-premio { margin: 0; font-family: var(--f-rotulo); color: var(--farol); font-size: 1.15rem; }
 .boton-principal { text-decoration: none; display: inline-block; background: var(--sangre); color: var(--tinta); border: 0; border-radius: 999px; padding: 14px 30px; font-family: var(--f-rotulo); font-size: 1.3rem; letter-spacing: .05em; box-shadow: 0 0 0 3px var(--noche), 0 0 0 4px var(--raya); }
 .boton-principal:hover { filter: brightness(1.12); }
 .boton-secundario { background: transparent; color: var(--tinta); border: 1px solid var(--raya); border-radius: 999px; padding: 11px 22px; font-family: var(--f-rotulo); font-size: 1.05rem; text-decoration: none; display: inline-block; }
@@ -155,6 +156,7 @@ button, .boton { font: inherit; cursor: pointer; }
       <li><svg viewBox="0 0 100 100" aria-hidden="true"><use href="#i-aceitera"/></svg></li>
       <li><svg viewBox="0 0 100 100" aria-hidden="true"><use href="#i-llave"/></svg></li>
     </ul>
+    <p class="aviso-premio">🎁 Si escapas, ¡tienes premio el día 31!</p>
     <button id="btn-entrar" class="boton-principal" type="button">Entrar al hospital</button>
     <p class="pie">Para todas las edades · <strong>Sábado 31 de octubre</strong> · Pasaje del Terror a las 20:30h · Campo de Fútbol de Puente Tablas</p>
   </section>

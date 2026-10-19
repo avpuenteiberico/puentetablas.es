@@ -91,6 +91,9 @@ p { margin: 0; }
 .juego { background: radial-gradient(circle at 30% 40%, rgba(255, 196, 120, .12), transparent 45%), var(--noche-2); border-block: 1px solid var(--raya); }
 .juego .envoltura { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 28px; align-items: center; }
 .juego p { max-width: 46ch; margin-bottom: 18px; }
+.premio-web { border: 1px dashed var(--farol); border-radius: 6px; padding: 12px 16px; background: var(--noche); }
+.premio-web strong { font-family: var(--f-rotulo); font-weight: 400; color: var(--farol); }
+.premio-web span { display: block; color: var(--tenue); font-size: .9em; margin-top: 2px; }
 .objetos { display: grid; grid-template-columns: repeat(4, 56px); gap: 10px; }
 .objetos svg { width: 38px; height: 38px; }
 .objetos span { width: 56px; height: 56px; border-radius: 50%; border: 1px solid var(--raya); display: grid; place-items: center; font-size: 1.7rem; background: var(--noche); }
@@ -264,6 +267,7 @@ footer img { width: 260px; max-width: 100%; height: auto; background: #fff; bord
       <p class="rotulo">Minijuego</p>
       <h2>¿Te atreves a entrar antes del día 31?</h2>
       <p>La sala de espera se ha quedado a oscuras. Coge la linterna, encuentra los 6 objetos perdidos y la llave para escapar. Se juega en un minuto desde el móvil y es para todas las edades.</p>
+      <p class="premio-web"><strong>¡Si escapas, tienes premio!</strong> Enseña tu ficha de alta en la entrada del Pasaje del Terror el sábado 31 y llévate un detalle de Halloween. <span>Uno por entrada, hasta agotar existencias.</span></p>
       <a class="boton boton-sangre" href="juego/index.html">Jugar ahora</a>
     </div>
     <div class="objetos" aria-hidden="true">
