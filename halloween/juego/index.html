@@ -124,6 +124,10 @@ button, .boton { font: inherit; cursor: pointer; }
 .sello { position: absolute; right: 16px; top: 62px; font-family: var(--f-display); color: var(--sangre); border: 3px solid var(--sangre); border-radius: 6px; padding: 0 10px; font-size: 1.7rem; transform: rotate(-14deg); opacity: .85; }
 .programa { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; font-size: 1.15rem; }
 .programa b { font-family: var(--f-rotulo); color: var(--farol); font-weight: 400; margin-right: 6px; font-variant-numeric: tabular-nums; }
+.premio { width: min(100%, 360px); box-sizing: border-box; border: 2px dashed var(--farol); border-radius: 10px; padding: 12px 16px; display: grid; gap: 4px; }
+.premio p { margin: 0; font-size: 1.1rem; line-height: 1.35; }
+.premio strong { color: var(--farol); font-family: var(--f-rotulo); font-weight: 400; }
+.premio .letra-pequena { color: var(--tenue); font-size: .95rem; }
 .acciones { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
 #texto-compartir { width: min(100%, 360px); font: inherit; font-size: .95rem; background: var(--noche-2); color: var(--tinta); border: 1px solid var(--raya); border-radius: 8px; padding: 8px; resize: none; }
 
@@ -400,6 +404,10 @@ button, .boton { font: inherit; cursor: pointer; }
       </dl>
       <span class="sello">Alta</span>
     </div>
+    <div class="premio">
+      <p><strong>¡Tienes premio!</strong> Enseña esta ficha en la entrada del Pasaje del Terror el sábado 31 y llévate un detalle de Halloween.</p>
+      <p class="letra-pequena">Uno por entrada, hasta agotar existencias. Haz una captura de pantalla para no perderla.</p>
+    </div>
     <p class="entrada">¿Te atreves con el de verdad?</p>
     <ul class="programa">
       <li><b>19:00h</b>Truco o trato</li>
@@ -409,6 +417,7 @@ button, .boton { font: inherit; cursor: pointer; }
       <li><b>Dónde</b>Campo de Fútbol de Puente Tablas</li>
     </ul>
     <p class="pie"><strong>Sábado 31 de octubre · Puente Tablas (Jaén)</strong><br>Para todas las edades. Niños y niñas, siempre acompañados.</p>
+    <a id="btn-info" class="boton-secundario" href="../">Toda la información del evento</a>
     <div class="acciones">
       <a id="btn-whatsapp" class="boton-principal" href="https://wa.me/" target="_blank" rel="noopener">Compartir por WhatsApp</a>
       <button id="btn-copiar" class="boton-secundario" type="button">Copiar mensaje</button>
@@ -624,13 +633,14 @@ function pintarFin() {
   $("#f-num").textContent = state.num; $("#f-nombre").textContent = state.nombre;
   $("#f-diag").textContent = state.diag; $("#f-tiempo").textContent = t;
   const msg = "👻 ¡He escapado del Hospital 1880 en " + t + "! Me han dado el alta como «" + state.nombre + "». ¿Te atreves?\n" +
-    "🎃 Halloween en Puente Tablas (Jaén) · Sábado 31 de octubre · Campo de Fútbol · Pasaje del Terror a las 20:30h" +
+    "🎃 Halloween en Puente Tablas (Jaén) · Sábado 31 de octubre · Campo de Fútbol · Pasaje del Terror a las 20:30h\n🎁 Si escapas, enseña tu ficha en la entrada del pasaje y llévate un detalle" +
     (URL_JUEGO ? "\nJuega aquí: " + URL_JUEGO : "");
   $("#texto-compartir").value = msg;
   $("#btn-whatsapp").href = "https://wa.me/?text=" + encodeURIComponent(msg);
 }
 
 $("#btn-whatsapp").addEventListener("click", () => medir("compartir_whatsapp", { lugar: "juego" }));
+$("#btn-info").addEventListener("click", () => medir("ir_a_la_web", { lugar: "juego" }));
 $("#btn-entrar").addEventListener("click", () => { audio(); empezar(); });
 $("#btn-otra").addEventListener("click", () => empezar());
 $("#btn-copiar").addEventListener("click", () => {
