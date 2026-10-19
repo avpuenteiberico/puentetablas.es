@@ -159,6 +159,7 @@ button, .boton { font: inherit; cursor: pointer; }
     <p class="aviso-premio">🎁 Si escapas, ¡tienes premio el día 31!</p>
     <button id="btn-entrar" class="boton-principal" type="button">Entrar al hospital</button>
     <p class="pie">Para todas las edades · <strong>Sábado 31 de octubre</strong> · Pasaje del Terror a las 20:30h · Campo de Fútbol de Puente Tablas</p>
+    <a id="btn-info-inicio" class="boton-secundario" href="../">← Información del evento</a>
   </section>
 
   <!-- ===================== JUEGO ===================== -->
@@ -643,6 +644,7 @@ function pintarFin() {
 
 $("#btn-whatsapp").addEventListener("click", () => medir("compartir_whatsapp", { lugar: "juego" }));
 $("#btn-info").addEventListener("click", () => medir("ir_a_la_web", { lugar: "juego" }));
+$("#btn-info-inicio").addEventListener("click", () => medir("ir_a_la_web", { lugar: "juego_inicio" }));
 $("#btn-entrar").addEventListener("click", () => { audio(); empezar(); });
 $("#btn-otra").addEventListener("click", () => empezar());
 $("#btn-copiar").addEventListener("click", () => {
