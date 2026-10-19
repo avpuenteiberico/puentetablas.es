@@ -122,13 +122,16 @@ button, .boton { font: inherit; cursor: pointer; }
 .ficha dl { display: grid; grid-template-columns: auto 1fr; gap: 6px 12px; margin: 0; font-size: 1.1rem; }
 .ficha dt { font-family: var(--f-rotulo); font-size: .9rem; letter-spacing: .04em; align-self: baseline; }
 .ficha dd { margin: 0; font-weight: 700; min-width: 0; font-variant-numeric: tabular-nums; }
-.sello { position: absolute; right: 16px; top: 62px; font-family: var(--f-display); color: var(--sangre); border: 3px solid var(--sangre); border-radius: 6px; padding: 0 10px; font-size: 1.7rem; transform: rotate(-14deg); opacity: .85; }
+.sello { position: absolute; right: -8px; top: -18px; background: var(--papel); font-family: var(--f-display); color: var(--sangre); border: 3px solid var(--sangre); border-radius: 6px; padding: 0 10px; font-size: 1.7rem; transform: rotate(-14deg); opacity: .85; }
 .programa { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; font-size: 1.15rem; }
 .programa b { font-family: var(--f-rotulo); color: var(--farol); font-weight: 400; margin-right: 6px; font-variant-numeric: tabular-nums; }
 .premio { width: min(100%, 360px); box-sizing: border-box; border: 2px dashed var(--farol); border-radius: 10px; padding: 12px 16px; display: grid; gap: 4px; }
 .premio p { margin: 0; font-size: 1.1rem; line-height: 1.35; }
 .premio strong { color: var(--farol); font-family: var(--f-rotulo); font-weight: 400; }
 .premio .letra-pequena { color: var(--tenue); font-size: .95rem; }
+#ficha-figura { margin: 0; width: min(100%, 300px); display: grid; gap: 8px; }
+#ficha-figura img { width: 100%; height: auto; border-radius: 8px; box-shadow: 0 0 0 1px var(--raya); }
+#ficha-figura figcaption { color: var(--tenue); font-size: 1rem; line-height: 1.3; }
 .acciones { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
 #texto-compartir { width: min(100%, 360px); font: inherit; font-size: .95rem; background: var(--noche-2); color: var(--tinta); border: 1px solid var(--raya); border-radius: 8px; padding: 8px; resize: none; }
 
@@ -409,8 +412,13 @@ button, .boton { font: inherit; cursor: pointer; }
     </div>
     <div class="premio">
       <p><strong>¡Tienes premio!</strong> Enseña esta ficha en la entrada del Pasaje del Terror el sábado 31 y llévate un detalle de Halloween.</p>
-      <p class="letra-pequena">Uno por entrada, hasta agotar existencias. Haz una captura de pantalla para no perderla.</p>
+      <p class="letra-pequena">Uno por entrada, hasta agotar existencias. Guarda tu ficha para no perderla.</p>
     </div>
+    <button id="btn-ficha" class="boton-principal" type="button">Guardar mi ficha</button>
+    <figure id="ficha-figura" hidden>
+      <img id="ficha-img" alt="Tu ficha de alta del Hospital 1880">
+      <figcaption>Mantén el dedo sobre la imagen para guardarla en tu móvil, o compártela en tus stories.</figcaption>
+    </figure>
     <p class="entrada">¿Te atreves con el de verdad?</p>
     <ul class="programa">
       <li><b>19:00h</b>Truco o trato</li>
@@ -642,11 +650,89 @@ function pintarFin() {
   $("#btn-whatsapp").href = "https://wa.me/?text=" + encodeURIComponent(msg);
 }
 
+/* ---------- Ficha de alta como imagen (formato story, 1080×1920) ---------- */
+async function imagenFicha() {
+  try {
+    await Promise.all([document.fonts.load('150px "Creepster"'), document.fonts.load('700 54px "Cormorant Garamond"'), document.fonts.load('40px "IM Fell English SC"')]);
+  } catch (e) {}
+  const W = 1080, H = 1920, c = document.createElement("canvas");
+  c.width = W; c.height = H;
+  const x = c.getContext("2d");
+  const DISPLAY = '"Creepster", Impact, sans-serif', TEXTO = '"Cormorant Garamond", Georgia, serif', ROTULO = '"IM Fell English SC", Georgia, serif';
+  const centrado = (txt, y, fuente, color, max = W - 160) => {
+    x.font = fuente; x.fillStyle = color; x.textAlign = "center"; x.textBaseline = "alphabetic";
+    let f = fuente; while (x.measureText(txt).width > max) { const n = parseFloat(f.match(/(\d+)px/)[1]) - 4; f = f.replace(/\d+px/, n + "px"); x.font = f; }
+    x.fillText(txt, W / 2, y);
+  };
+  // Fondo y marco
+  x.fillStyle = "#0d0a0c"; x.fillRect(0, 0, W, H);
+  const g = x.createRadialGradient(W / 2, 820, 50, W / 2, 820, 900);
+  g.addColorStop(0, "rgba(224,135,47,.16)"); g.addColorStop(1, "rgba(224,135,47,0)");
+  x.fillStyle = g; x.fillRect(0, 0, W, H);
+  x.strokeStyle = "#e0872f"; x.lineWidth = 4; x.strokeRect(40, 40, W - 80, H - 80);
+  x.lineWidth = 2; x.strokeRect(56, 56, W - 112, H - 112);
+  // Cabecera
+  centrado("Halloween en Puente Tablas", 175, '46px ' + ROTULO, "#e0872f");
+  centrado("Hospital 1880", 340, '150px ' + DISPLAY, "#d4202a");
+  centrado("¡He escapado!", 480, '104px ' + DISPLAY, "#efe6da");
+  // Ficha de papel, algo girada
+  x.save(); x.translate(W / 2, 900); x.rotate(-0.025);
+  const fw = 820, fh = 620;
+  x.shadowColor = "rgba(0,0,0,.6)"; x.shadowBlur = 40; x.shadowOffsetY = 16;
+  x.fillStyle = "#eadcc0"; x.fillRect(-fw / 2, -fh / 2, fw, fh);
+  x.shadowColor = "transparent";
+  x.fillStyle = "#3a2a1e"; x.textAlign = "left";
+  x.font = '40px ' + ROTULO; x.fillText("Hospital 1880 · Ficha de ingreso", -fw / 2 + 50, -fh / 2 + 85);
+  x.fillRect(-fw / 2 + 50, -fh / 2 + 110, fw - 100, 4);
+  const filas = [["Paciente nº", state.num], ["Nombre", state.nombre], ["Diagnóstico", state.diag], ["Huida en", mmss(state.tFin - state.t0)], ["Próxima cita", "31 oct., 20:30h"]];
+  filas.forEach(([k, v], i) => {
+    const y = -fh / 2 + 190 + i * 88;
+    x.font = '34px ' + ROTULO; x.fillText(k, -fw / 2 + 50, y);
+    x.font = '700 50px ' + TEXTO; x.fillText(v, -fw / 2 + 300, y);
+  });
+  x.save(); x.translate(fw / 2 - 70, -fh / 2 + 10); x.rotate(-0.24);
+  x.strokeStyle = "#d4202a"; x.lineWidth = 7; x.strokeRect(-105, -62, 210, 100);
+  x.fillStyle = "#d4202a"; x.textAlign = "center"; x.font = '78px ' + DISPLAY; x.fillText("Alta", 0, 22);
+  x.restore(); x.restore();
+  // Premio
+  x.setLineDash([16, 12]); x.strokeStyle = "#e0872f"; x.lineWidth = 4;
+  x.strokeRect(120, 1310, W - 240, 230); x.setLineDash([]);
+  centrado("¡Tengo premio!", 1395, '54px ' + ROTULO, "#e0872f");
+  centrado("Enséñala en la entrada del Pasaje del Terror", 1460, '700 42px ' + TEXTO, "#efe6da", W - 300);
+  centrado("y llévate un detalle de Halloween", 1510, '700 42px ' + TEXTO, "#efe6da", W - 300);
+  // Pie
+  centrado("¿Te atreves a escapar?", 1680, '64px ' + DISPLAY, "#d4202a");
+  centrado("puentetablas.es/halloween", 1755, '700 50px ' + TEXTO, "#efe6da");
+  centrado("Sábado 31 de octubre · Campo de Fútbol de Puente Tablas", 1815, '700 36px ' + TEXTO, "#b5a698");
+  return new Promise((ok) => c.toBlob(ok, "image/png"));
+}
+
+$("#btn-ficha").addEventListener("click", async () => {
+  const b = $("#btn-ficha"); b.disabled = true; b.textContent = "Preparando tu ficha…";
+  let blob = null;
+  try { blob = await imagenFicha(); } catch (e) {}
+  b.disabled = false; b.textContent = "Guardar mi ficha";
+  if (!blob) { b.textContent = "No se ha podido crear la imagen"; return; }
+  const img = $("#ficha-img");
+  if (img.dataset.url) URL.revokeObjectURL(img.dataset.url);
+  img.dataset.url = URL.createObjectURL(blob); img.src = img.dataset.url;
+  $("#ficha-figura").hidden = false;
+  medir("guardar_ficha");
+  const archivo = new File([blob], "ficha-hospital-1880.png", { type: "image/png" });
+  try {
+    if (navigator.canShare && navigator.canShare({ files: [archivo] })) {
+      await navigator.share({ files: [archivo], title: "Hospital 1880", text: $("#texto-compartir").value });
+      medir("compartir_ficha");
+    }
+  } catch (e) { /* el usuario ha cancelado o el navegador no deja compartir: queda la imagen en pantalla */ }
+  $("#ficha-figura").scrollIntoView({ behavior: "smooth", block: "center" });
+});
+
 $("#btn-whatsapp").addEventListener("click", () => medir("compartir_whatsapp", { lugar: "juego" }));
 $("#btn-info").addEventListener("click", () => medir("ir_a_la_web", { lugar: "juego" }));
 $("#btn-info-inicio").addEventListener("click", () => medir("ir_a_la_web", { lugar: "juego_inicio" }));
 $("#btn-entrar").addEventListener("click", () => { audio(); empezar(); });
-$("#btn-otra").addEventListener("click", () => empezar());
+$("#btn-otra").addEventListener("click", () => { $("#ficha-figura").hidden = true; empezar(); });
 $("#btn-copiar").addEventListener("click", () => {
   medir("copiar_mensaje");
   const ta = $("#texto-compartir"), b = $("#btn-copiar");
