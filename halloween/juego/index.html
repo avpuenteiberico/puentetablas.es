@@ -140,6 +140,8 @@ button, .boton { font: inherit; cursor: pointer; }
 #ficha-figura { margin: 0; width: min(100%, 300px); display: grid; gap: 8px; }
 #ficha-figura img { width: 100%; height: auto; border-radius: 8px; box-shadow: 0 0 0 1px var(--raya); }
 #ficha-figura figcaption { color: var(--tenue); font-size: 1rem; line-height: 1.3; }
+.enlace-mapa { color: var(--tinta); text-decoration: underline; text-decoration-color: var(--farol); text-underline-offset: 3px; }
+.enlace-mapa:hover { color: var(--farol); }
 .acciones { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
 #texto-compartir { width: min(100%, 360px); font: inherit; font-size: .95rem; background: var(--noche-2); color: var(--tinta); border: 1px solid var(--raya); border-radius: 8px; padding: 8px; resize: none; }
 
@@ -442,7 +444,7 @@ button, .boton { font: inherit; cursor: pointer; }
       <li><b>20:30h</b>Pasaje del Terror · 2 €</li>
       <li><b>22:00h</b>Concurso de disfraces</li>
       <li>Castillos hinchables, música, barra y buñuelos</li>
-      <li><b>Dónde</b>Campo de Fútbol de Puente Tablas</li>
+      <li><b>Dónde</b><a id="btn-mapa" class="enlace-mapa" href="https://www.google.com/maps/search/?api=1&amp;query=37.80087669389174%2C-3.747927235392004" target="_blank" rel="noopener">Campo de Fútbol de Puente Tablas 📍</a></li>
     </ul>
     <p class="pie"><strong>Sábado 31 de octubre · Puente Tablas (Jaén)</strong><br>Para todas las edades. Niños y niñas, siempre acompañados.</p>
     <a id="btn-info" class="boton-secundario" href="../">Toda la información del evento</a>
@@ -785,6 +787,7 @@ $("#btn-ficha").addEventListener("click", async () => {
 
 $("#btn-whatsapp").addEventListener("click", () => medir("compartir_whatsapp", { lugar: "juego" }));
 $("#btn-info").addEventListener("click", () => medir("ir_a_la_web", { lugar: "juego" }));
+$("#btn-mapa").addEventListener("click", () => medir("abrir_mapa", { lugar: "juego" }));
 $("#btn-info-inicio").addEventListener("click", () => medir("ir_a_la_web", { lugar: "juego_inicio" }));
 $("#btn-entrar").addEventListener("click", () => { audio(); empezar(); });
 $("#btn-otra").addEventListener("click", () => { $("#ficha-figura").hidden = true; $("#editar").open = false; empezar(); });
