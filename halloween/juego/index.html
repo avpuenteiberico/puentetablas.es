@@ -822,17 +822,18 @@ window.claude?.hot?.ready ? window.claude.hot.ready(start) : start(window.claude
 </script>
 
 <div id="aviso-cookies" hidden>
-  <p>Usamos cookies de Google Analytics solo para contar las visitas de forma anónima y mejorar la web. <a href="../cookies.html">Más información</a></p>
+  <p><strong>🍪 ¿Nos ayudas a mejorar?</strong>Usamos cookies de Google Analytics solo para contar las visitas de forma anónima y mejorar la web. <a href="../cookies.html">Más información</a></p>
   <div><button id="cookies-si" type="button">Aceptar</button><button id="cookies-no" type="button">Rechazar</button></div>
 </div>
 <style>
 #aviso-cookies { position: fixed; left: 0; right: 0; bottom: 0; z-index: 50; background: #19110f; color: #efe6da; border-top: 2px solid #e0872f;
-  padding: 14px max(16px, env(safe-area-inset-right, 0px)) calc(14px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
-  display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; justify-content: center; font-family: Georgia, serif; font-size: 16px; line-height: 1.35; }
+  padding: 22px max(16px, env(safe-area-inset-right, 0px)) calc(22px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
+  display: flex; flex-direction: column; gap: 16px; align-items: center; justify-content: center; text-align: center; font-family: Georgia, serif; font-size: 19px; line-height: 1.4; box-shadow: 0 -10px 30px rgba(0,0,0,.6); }
+#aviso-cookies strong { display: block; font-size: 22px; color: #e0872f; margin-bottom: 4px; }
 #aviso-cookies p { margin: 0; max-width: 60ch; }
 #aviso-cookies a { color: #e0872f; }
-#aviso-cookies div { display: flex; gap: 10px; }
-#aviso-cookies button { font: inherit; border-radius: 999px; padding: 8px 18px; cursor: pointer; border: 1px solid #e0872f; background: transparent; color: #efe6da; }
+#aviso-cookies div { display: flex; gap: 14px; width: min(100%, 420px); }
+#aviso-cookies button { flex: 1; font: inherit; font-size: 20px; font-weight: 700; border-radius: 999px; padding: 14px 18px; cursor: pointer; border: 2px solid #e0872f; background: transparent; color: #efe6da; }
 #aviso-cookies #cookies-si { background: #d4202a; border-color: #d4202a; }
 </style>
 <script>
