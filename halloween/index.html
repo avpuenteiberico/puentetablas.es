@@ -347,7 +347,7 @@ function medir(evento, datos) { try { if (window.gtag) window.gtag("event", even
 // Enlace público de esta página: rellenar cuando esté en la web de la asociación.
 const URL_EVENTO = "https://puentetablas.es/halloween/";
 const msg = "🎃 Halloween en Puente Tablas · Sábado 31 de octubre · Campo de Fútbol\n" +
-  "🍬 19:00h Truco o trato · 🩸 20:30h Pasaje del Terror «Hospital 1880» (2 €) · 💀 22:00h Concurso de disfraces" +
+  "🍬 19:00h Truco o trato · 🏥 20:30h Pasaje del Terror «Hospital 1880» (2 €) · 💀 22:00h Concurso de disfraces" +
   (URL_EVENTO ? "\nToda la información y el minijuego: " + URL_EVENTO : "");
 document.getElementById("compartir").href = "https://wa.me/?text=" + encodeURIComponent(msg);
 document.getElementById("compartir").addEventListener("click", () => medir("compartir_whatsapp", { lugar: "web" }));
