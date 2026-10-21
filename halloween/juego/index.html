@@ -430,7 +430,7 @@ button, .boton { font: inherit; cursor: pointer; }
       <button id="btn-azar" class="boton-secundario" type="button">🎲 Otro al azar</button>
     </details>
     <div class="premio">
-      <p><strong>¡Premio para los peques!</strong> Niños y niñas (o sus padres y madres): enseñad esta ficha al comprar la entrada al Pasaje del Terror (2 €) el sábado 31 y el peque se llevará un detalle de Halloween.</p>
+      <p><strong>¡Premio para los peques!</strong> Niños y niñas (o sus padres y madres): enseñad esta ficha al comprar una entrada al Pasaje del Terror (2 €) el sábado 31 y el peque se llevará un detalle de Halloween.</p>
       <p class="letra-pequena">Uno por entrada, hasta agotar existencias. Guarda tu ficha para no perderla.</p>
     </div>
     <button id="btn-ficha" class="boton-principal" type="button">Guardar mi ficha</button>
@@ -669,7 +669,7 @@ function pintarFin() {
 function pintarMensaje() {
   const t = mmss(state.tFin - state.t0);
   const msg = "👻 ¡He escapado del Hospital 1880 en " + t + "! Me han dado el alta como «" + state.nombre + "». ¿Te atreves?\n" +
-    "🎃 Halloween en Puente Tablas (Jaén) · Sábado 31 de octubre · Campo de Fútbol · Pasaje del Terror a las 20:30h\n🎁 Los peques que escapen se llevan un detalle al comprar su entrada al pasaje" +
+    "🎃 Halloween en Puente Tablas (Jaén) · Sábado 31 de octubre · Campo de Fútbol · Pasaje del Terror a las 20:30h\n🎁 Los peques que escapen se llevan un detalle al comprar una entrada al pasaje" +
     (URL_JUEGO ? "\nJuega aquí: " + URL_JUEGO : "");
   $("#texto-compartir").value = msg;
   $("#btn-whatsapp").href = "https://wa.me/?text=" + encodeURIComponent(msg);
@@ -755,7 +755,7 @@ async function imagenFicha() {
   x.setLineDash([16, 12]); x.strokeStyle = "#e0872f"; x.lineWidth = 4;
   x.strokeRect(120, 1310, W - 240, 230); x.setLineDash([]);
   centrado("¡Premio para peques!", 1395, '54px ' + ROTULO, "#e0872f");
-  centrado("Enséñala al comprar tu entrada", 1460, '700 42px ' + TEXTO, "#efe6da", W - 300);
+  centrado("Enséñala al comprar una entrada", 1460, '700 42px ' + TEXTO, "#efe6da", W - 300);
   centrado("al Pasaje y llévate un detalle de Halloween", 1510, '700 42px ' + TEXTO, "#efe6da", W - 300);
   // Pie
   centrado("¿Te atreves a escapar?", 1680, '64px ' + DISPLAY, "#d4202a");
